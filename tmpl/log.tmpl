@@ -22,7 +22,9 @@ pre {
 <? LOOP LogLoop ?><? VAR log ?><? LogLoop ?><? ENDLOOP ?>
 </pre>
 
-<br />
+<? LOOP LogLoop ?><a href="<? VAR raw ?>">Raw</a><? ENDLOOP ?>
+
+<br /><br />
 <? INC Breadcrumbs.tmpl ?>
 
 <? INC Footer.tmpl ?>
