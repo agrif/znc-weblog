@@ -19,7 +19,10 @@ pre {
 </style>
 
 <pre>
-<? LOOP LogLoop ?><? VAR log ?><? LogLoop ?>
+<? LOOP LogLoop ?><? VAR log ?><? LogLoop ?><? ENDLOOP ?>
 </pre>
+
+<br />
+<? INC Breadcrumbs.tmpl ?>
 
 <? INC Footer.tmpl ?>

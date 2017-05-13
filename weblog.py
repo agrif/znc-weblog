@@ -70,7 +70,7 @@ class weblog(znc.Module):
 
         except FileNotFoundError:
             row = tmpl.AddRow("ErrorLoop")
-            row["error"] = "Directory does not exist."
+            row["error"] = "Directory does not exist. Please make sure you have the log module enabled and that you are attempting to access logs at the appropriate level (global, user, or network)."
 
     def viewlog(self, tmpl, dir, sock, page):
         base = self.getbase(sock)
