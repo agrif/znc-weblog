@@ -1,5 +1,5 @@
 # znc-weblog
-Allowings viewing of log files from the ZNC webadmin
+Allows viewing of log files from the ZNC webadmin
 
 ## Usage
 
