@@ -1,0 +1,21 @@
+<? INC Header.tmpl ?>
+
+<p><? LOOP BreadcrumbLoop ?><a href="index?dir=<? VAR CrumbURL ?>"><? VAR CrumbText ?></a> / <? ENDLOOP ?></p><br />
+
+<style type="text/css">
+pre {
+  background: white;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+  padding: 5px;
+}
+</style>
+
+<pre>
+<? LOOP LogLoop ?><? VAR log ?><? LogLoop ?>
+</pre>
+
+<? INC Footer.tmpl ?>

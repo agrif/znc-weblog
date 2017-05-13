@@ -1,0 +1,24 @@
+<? INC Header.tmpl ?>
+
+<p><? LOOP BreadcrumbLoop ?><a href="?dir=<? VAR CrumbURL ?>"><? VAR CrumbText ?></a> / <? ENDLOOP ?></p><br />
+
+<div class="toptable">
+        <table class="data">
+                <thead>
+                        <tr>
+                                <td>Item</td>
+                                <td>Size</td>
+                        </tr>
+                </thead>
+                <tbody>
+                        <? LOOP ListLoop ?>
+                        <tr class="<? IF __EVEN__ ?>evenrow<? ELSE ?>oddrow<? ENDIF ?>">
+                                <td><a href="<? VAR Path ?>"><? VAR Item ?></a></td>
+                                <td width="125px"><? VAR Size ?></td>
+                        </tr>
+                        <? ENDLOOP ?>
+                </tbody>
+        </table>
+</div>
+
+<? INC Footer.tmpl ?>
