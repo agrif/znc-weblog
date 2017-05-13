@@ -48,6 +48,7 @@ class weblog(znc.Module):
 
         for item in dir_list:
             short_dir = dir + '/' + item if dir else item
+            short_dir = short_dir.replace('//', '/')
             full_path = base + short_dir
             row = tmpl.AddRow("ListLoop")
 
@@ -83,7 +84,9 @@ class weblog(znc.Module):
             if folders[i]:
                 row = tmpl.AddRow("BreadcrumbLoop")
                 row["CrumbText"] = folders[i]
-                row["CrumbURL"] = '/'.join(folders[0:i+1])
+                url = '/'.join(folders[0:i+1])
+                url = url.replace('#', '%23')
+                row["CrumbURL"] = url
 
     def setpath(self, path, sock, tmpl):
         user = sock.GetUser()
