@@ -1,5 +1,5 @@
 import znc
-#from os import listdir, path
+#from os import listdir, scope
 import os
 
 class weblog(znc.Module):
@@ -7,7 +7,6 @@ class weblog(znc.Module):
     description = "Allowings viewing of log files from the ZNC webadmin"
 
     def OnLoad(self, args, message):
-        self.AddSubPage(znc.CreateWebSubPage('path', title='Set Path'))
         return True
 
     def WebRequiresLogin(self):
@@ -21,93 +20,119 @@ class weblog(znc.Module):
 
     def OnWebRequest(self, sock, page, tmpl):
         user = sock.GetUser()
-
         dir = sock.GetParam('dir', False)
         if page == "index":
+            if sock.GetRawParam('scope', True):
+                scope = sock.GetRawParam('scope', True)
+                self.setscope(scope, sock, tmpl)
             try:
-                self.listdir(tmpl, dir, user)
+                self.listdir(tmpl, dir, sock)
             except KeyError:
-                sock.Redirect(self.GetWebPath() + 'path')
-        elif page == "log":
-            self.viewlog(tmpl, dir, user)
-        elif page == "path":
-            try:
-                path = sock.GetRawParam('path', True)
-            except:
-                path = "None"
-            self.setpath(path, sock, tmpl)
+                row = tmpl.AddRow("ErrorLoop")
+                row["error"] = "No scope set. Please set one above."
+        elif page == "log" or page == "raw":
+            self.viewlog(tmpl, dir, sock, page)
+        self.getscopes(sock, tmpl)
 
         return True
 
-    def listdir(self, tmpl, dir, user):
-        base = self.nv[user].replace("$USER", user)
-        rel_dir = base + dir
-        dir_list = sorted(os.listdir(rel_dir))
+    def listdir(self, tmpl, dir, sock):
+        base = self.getbase(sock)
 
-        self.breadcrumbs(tmpl, dir)
+        try:
+            dir_list = sorted(os.listdir(base + dir))
 
-        for item in dir_list:
-            short_dir = dir + '/' + item if dir else item
-            short_dir = short_dir.replace('//', '/')
-            full_path = base + short_dir
-            row = tmpl.AddRow("ListLoop")
+            self.breadcrumbs(tmpl, dir, False)
 
-            if os.path.isfile(full_path):
-                path = 'log?dir=' + short_dir.replace('#', '%23')
-                size = str(os.path.getsize(full_path) >> 10) + " KB"
-            elif os.path.isdir(full_path):
-                path = '?dir=' + short_dir.replace('#', '%23')
-                size = len([name for name in os.listdir(full_path)])
+            if len(dir_list) > 0:
+                for item in dir_list:
+                    row = tmpl.AddRow("ListLoop")
 
-            row["Path"] = path
-            row["Item"] = item
+                    rel = dir + '/' + item if dir else item
 
-            row["Size"] = str(size)
+                    path = base + rel
 
-    def viewlog(self, tmpl, dir,  user):
-        self.breadcrumbs(tmpl, dir)
-        base = self.nv[user].replace("$USER", user)
-        full_path = base + dir
+                    if os.path.isfile(path):
+                        url = 'log?dir=' + rel.replace('#', '%23')
+                        size = str(os.path.getsize(path) >> 10) + " KB"
+                    elif os.path.isdir(path):
+                        url = '?dir=' + rel.replace('#', '%23')
+                        size = len([name for name in os.listdir(path)])
+
+                    row["scope"] = url
+                    row["item"] = item
+
+                    row["size"] = str(size)
+
+            else:
+                row = tmpl.AddRow("ErrorLoop")
+                row["error"] = "Directory empty."
+
+        except FileNotFoundError:
+            row = tmpl.AddRow("ErrorLoop")
+            row["error"] = "Directory does not exist."
+
+    def viewlog(self, tmpl, dir, sock, page):
+        base = self.getbase(sock)
+        path = base + dir
         row = tmpl.AddRow("LogLoop")
-        with open(full_path, 'r', encoding='utf8') as log:
+        with open(path, 'r', encoding='utf8') as log:
             log = log.read()
         row['log'] = log
+        if page == "log":
+            self.breadcrumbs(tmpl, dir, True)
+            row['raw'] = 'raw?dir=' + dir.replace('#', '%23')
 
-    def breadcrumbs(self, tmpl, dir):
+    def breadcrumbs(self, tmpl, dir, islog):
         folders = dir.split('/')
         crumbs = ['<a href="">logs / </a>']
 
         row = tmpl.AddRow("BreadcrumbLoop")
-        row["CrumbText"] = "logs"
-        row["CrumbURL"] = ""
+        row["crumbtext"] = "logs"
+        row["crumburl"] = ""
         for i in range(0, len(folders)):
             if folders[i]:
                 row = tmpl.AddRow("BreadcrumbLoop")
-                row["CrumbText"] = folders[i]
+                row["crumbtext"] = folders[i]
                 url = '/'.join(folders[0:i+1])
                 url = url.replace('#', '%23')
-                row["CrumbURL"] = url
+                row["crumburl"] = url
+                if i == len(folders) - 1 and islog:
+                    row["islog"] = "True"
 
-    def setpath(self, path, sock, tmpl):
+    def getbase(self, sock):
+        base = znc.CZNC.Get().GetZNCPath()
         user = sock.GetUser()
-        row = tmpl.AddRow("MessageLoop")
-        if path:
-            if "$USER" not in path:
-                row["Message"] = 'You must include a "$USER" variable (ALL CAPS).'
-            else:
-                user = sock.GetUser()
-                if os.path.exists(path.replace("$USER", user)):
-                    if not path.endswith('/'):
-                        path = path + '/'
-                    self.nv[user] = path
-                    row["Message"] = "Path successfully set."
-                else:
-                    row["Message"] = "Path invalid."
+        scope = self.nv[user]
+        if scope == "Global":
+            base = base + '/moddata/log/' + user + '/'
+        elif scope == "User":
+            base = base + '/users/' + user + '/moddata/log/'
         else:
-            row["Message"] = "Please set a path."
+            base = base + '/users/' + user + '/networks/' + self.nv[user] + '/moddata/log/'
 
-        row = tmpl.AddRow("PathLoop")
-        try:
-            row["Path"] = self.nv[user]
-        except KeyError:
-            row["Path"] = ""
+        return base
+
+    def getscopes(self, sock, tmpl):
+        user_string = sock.GetUser()
+        user = znc.CZNC.Get().FindUser(user_string)
+        networks = user.GetNetworks()
+        net_array = []
+        for network in networks:
+            net_array.append(network.GetName())
+        net_array = sorted(net_array)
+        net_array.insert(0, 'User'); net_array.insert(0, 'Global')
+        for net in net_array:
+            row = tmpl.AddRow("ScopeLoop")
+            try:
+                if net == self.nv[user_string]:
+                    row["active"] = "True"
+            except KeyError:
+                pass
+            row["network"] = net
+
+    def setscope(self, scope, sock, tmpl):
+        user = sock.GetUser()
+        self.nv[user] = scope
+        row = tmpl.AddRow("MessageLoop")
+        row["message"] = "Scope successfully set."

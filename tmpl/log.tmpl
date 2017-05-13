@@ -1,6 +1,10 @@
 <? INC Header.tmpl ?>
 
-<p><? LOOP BreadcrumbLoop ?><a href="index?dir=<? VAR CrumbURL ?>"><? VAR CrumbText ?></a> / <? ENDLOOP ?></p><br />
+<? INC Scope.tmpl ?>
+
+<? INC Breadcrumbs.tmpl ?>
+
+<? LOOP LogLoop ?><a href="<? VAR raw ?>">Raw</a><? ENDLOOP ?>
 
 <style type="text/css">
 pre {

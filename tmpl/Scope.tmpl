@@ -1,0 +1,11 @@
+Scope:
+
+<form name="scope" action="index" method="post" style="display:inline;">
+    <? INC _csrf_check.tmpl ?>
+    <select name="scope">
+        <? LOOP ScopeLoop ?>
+            <option value="<? VAR network ?>" <? IF active ?>selected="selected"<? ENDIF ?>><? VAR network ?></option>
+        <? ENDLOOP ?>
+    </select>
+    <input type="submit" value="Set" />
+</form><br /><br />

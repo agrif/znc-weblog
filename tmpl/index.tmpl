@@ -1,7 +1,14 @@
 <? INC Header.tmpl ?>
 
-<p><? LOOP BreadcrumbLoop ?><a href="?dir=<? VAR CrumbURL ?>"><? VAR CrumbText ?></a> / <? ENDLOOP ?></p><br />
+<? INC Scope.tmpl ?>
 
+<? INC Breadcrumbs.tmpl ?>
+
+<? LOOP ErrorLoop ?>
+<? IF error ?>
+<p><b><? VAR error ?></b></p>
+<? ENDIF ?>
+<? ENDLOOP ?>
 <div class="toptable">
         <table class="data">
                 <thead>
@@ -13,8 +20,8 @@
                 <tbody>
                         <? LOOP ListLoop ?>
                         <tr class="<? IF __EVEN__ ?>evenrow<? ELSE ?>oddrow<? ENDIF ?>">
-                                <td><a href="<? VAR Path ?>"><? VAR Item ?></a></td>
-                                <td width="125px"><? VAR Size ?></td>
+                                <td><a href="<? VAR scope ?>"><? VAR item ?></a></td>
+                                <td width="125px"><? VAR size ?></td>
                         </tr>
                         <? ENDLOOP ?>
                 </tbody>
