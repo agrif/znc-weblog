@@ -5,6 +5,7 @@ import os
 class weblog(znc.Module):
     module_types = [znc.CModInfo.GlobalModule]
     description = "Allowings viewing of log files from the ZNC webadmin"
+    wiki_page = "Weblog"
 
     def OnLoad(self, args, message):
         return True
@@ -78,6 +79,8 @@ class weblog(znc.Module):
         row = tmpl.AddRow("LogLoop")
         with open(path, 'r', encoding='utf8') as log:
             log = log.read()
+        if page == "raw":
+            log = log.replace('<', '&lt;').replace('>', '&gt;')
         row['log'] = log
         if page == "log":
             self.breadcrumbs(tmpl, dir, True)
