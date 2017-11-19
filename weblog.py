@@ -1,6 +1,8 @@
 import znc
-#from os import listdir, scope
 import os
+
+def is_safe_path(basedir, path):
+    return os.path.realpath(path).startswith(basedir)
 
 class weblog(znc.Module):
     module_types = [znc.CModInfo.GlobalModule]
@@ -75,6 +77,16 @@ class weblog(znc.Module):
 
     def viewlog(self, tmpl, dir, sock, page):
         base = self.getbase(sock)
+
+        if not is_safe_path(base, base + dir):
+            if page == "raw":
+                row = tmpl.AddRow("LogLoop")
+                row['log'] = "Error: invalid directory provided."
+                return
+            row = tmpl.AddRow("ErrorLoop")
+            row["error"] = "Invalid directory provided."
+            return
+
         path = base + dir
         row = tmpl.AddRow("LogLoop")
         with open(path, 'r', encoding='utf8') as log:
