@@ -2,7 +2,7 @@ import znc
 import os
 
 def is_safe_path(basedir, path):
-    return os.path.realpath(path).startswith(basedir)
+    return os.path.abspath(path).startswith(basedir)
 
 class weblog(znc.Module):
     module_types = [znc.CModInfo.GlobalModule]
